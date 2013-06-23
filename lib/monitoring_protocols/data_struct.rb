@@ -3,7 +3,7 @@ module MonitoringProtocols
   class DataStruct
 
     def initialize(*args)
-      merge_data_from(*args)
+      merge_data_from!(*args)
     end
     
     ##
@@ -15,17 +15,45 @@ module MonitoringProtocols
     # @param [Boolean] allow_nil If false nil values from
     #   the source will not be copied in object
     # 
-    def merge_data_from(opts_or_obj = {}, only_fields = nil, allow_nil = false)
+    def merge_data_from!(opts_or_obj = {}, only_fields = nil, allow_nil = false)
+      keys_left = list_keys(opts_or_obj)
+      
       self.class.attributes.select{|attr_name| selected_field?(attr_name, only_fields) }.each do |attr_name|
         v = opts_or_obj.is_a?(Hash) ? (opts_or_obj[attr_name.to_s] || opts_or_obj[attr_name]) : opts_or_obj.send(attr_name)
         if allow_nil || !v.nil?
           send("#{attr_name}=", v)
         end
+        
+        keys_left.delete(attr_name)
+      end
+      
+      unless keys_left.empty?
+        raise ArgumentError, "unknown keys: #{keys_left}"
+      end
+    end
+    
+    def list_keys(what)
+      if what.respond_to?(:keys)
+        what.keys.clone
+      else
+        []
       end
     end
     
     def selected_field?(field, list)
       list.nil? || list.include?(field.to_sym)
+    end
+    
+    def to_h
+      h = {}
+      self.class.attributes.each do |attr_name|
+        h[attr_name] = send(attr_name)
+      end
+      h
+    end
+    
+    def to_msgpack(pack)
+      pack.write(to_h)
     end
 
 
@@ -40,7 +68,11 @@ module MonitoringProtocols
       alias :property :properties
 
       def attributes
-        @attributes
+        if (superclass <= DataStruct) && (superclass.attributes)
+          superclass.attributes + @attributes
+        else
+          @attributes
+        end
       end
     end
 

@@ -1,7 +1,7 @@
 module MonitoringProtocols
   module Collectd
     
-    module Parser
+    class Parser < Parser
       
       # part type
       HOST            = 0x0000
@@ -102,7 +102,7 @@ module MonitoringProtocols
         ].freeze
       
       def self.parse_packet(buffer, initial_values = {})
-        packet = Packet.new(initial_values, COPY_FIELDS)
+        packet = NetworkMessage.new(initial_values, COPY_FIELDS)
         
         begin
           type, value, buffer = parse_part(buffer)
@@ -126,9 +126,31 @@ module MonitoringProtocols
         
         packets
       end
+      
+      # def initialize
+      #   @buffer = ""
+      #   @last_packet = {}
+      # end
+      
+      # def feed(data)
+      #   ret = []
+        
+      #   @buffer << data
+      #   if @buffer.bytesize >= 4
+      #     pkt, @buffer = self.class.parse_packet(@buffer, @last_packet)
+      #     if pkt.data?
+      #       ret << pkt
+      #       @last_packet = pack
+      #     end
+      #   end
+        
+      #   ret
+      # end
 
     end
     
     
   end
+  
+  register_parser(:collectd, Collectd::Parser)
 end

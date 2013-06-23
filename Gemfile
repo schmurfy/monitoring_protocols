@@ -5,7 +5,7 @@ gemspec
 gem 'rake'
 
 group(:test) do
-  gem 'eetee',          '~> 0.0.6'
+  gem 'eetee',          '~> 0.0.9'
   # gem 'eetee',          path: '/Users/Schmurfy/Dev/personal/gems/eetee'
   gem 'mocha',          '~> 0.12.0'
   gem 'factory_girl'

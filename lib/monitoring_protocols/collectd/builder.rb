@@ -91,4 +91,6 @@ module MonitoringProtocols
     end
         
   end
+  
+  register_builder(:collectd, Collectd::Builder)
 end

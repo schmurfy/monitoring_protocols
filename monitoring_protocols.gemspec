@@ -4,8 +4,8 @@ require File.expand_path('../lib/monitoring_protocols/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Julien Ammous"]
   gem.email         = ["schmurfy@gmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{...}
+  gem.summary       = %q{....}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)
@@ -13,4 +13,6 @@ Gem::Specification.new do |gem|
   gem.name          = "monitoring_protocols"
   gem.require_paths = ["lib"]
   gem.version       = MonitoringProtocols::VERSION
+  
+  gem.add_dependency 'msgpack'
 end

@@ -13,30 +13,30 @@ describe 'Collectd Ruby parser' do
       @builder_class.send(cmd, *args)
     }
     
-    @parser = MonitoringProtocols::Collectd::Parser
+    @parser_class = MonitoringProtocols::Collectd::Parser
   end
     
   describe 'Simple packets' do
     it 'can parse numbers' do
-      type, val, buffer = @parser.parse_part( builder.number(1, 122) )
+      type, val, buffer = @parser_class.parse_part( builder.number(1, 122) )
       buffer.should == ""
       val.should == 122
       
-      type, val, _ = @parser.parse_part( builder.number(1, 2500) )
+      type, val, _ = @parser_class.parse_part( builder.number(1, 2500) )
       val.should == 2500
       
-      type, val, _ = @parser.parse_part( builder.number(1, 356798) )
+      type, val, _ = @parser_class.parse_part( builder.number(1, 356798) )
       val.should == 356798
     end
     
     should 'parse strings' do
-      type, str, _ = @parser.parse_part( builder.string(0, "hostname1") )
+      type, str, _ = @parser_class.parse_part( builder.string(0, "hostname1") )
       str.should == 'hostname1'
       
-      type, str, _ = @parser.parse_part( builder.string(0, "string with spaces") )
+      type, str, _ = @parser_class.parse_part( builder.string(0, "string with spaces") )
       str.should == 'string with spaces'
       
-      type, str, _ = @parser.parse_part( builder.string(0, "a really long string with many words in it") )
+      type, str, _ = @parser_class.parse_part( builder.string(0, "a really long string with many words in it") )
       str.should == 'a really long string with many words in it'
     end
     
@@ -46,7 +46,7 @@ describe 'Collectd Ruby parser' do
           [1034, -4567, 34]
         )
         
-      type, values, rest = @parser.parse_part( buffer )
+      type, values, rest = @parser_class.parse_part( buffer )
       rest.should == ""
       values.should == [1034, -4567, 34]
     end
@@ -69,11 +69,11 @@ describe 'Collectd Ruby parser' do
     end
     
     should 'parse the notification' do
-      data, rest = @parser.parse_packet(@pkt)
+      data, rest = @parser_class.parse_packet(@pkt)
       
       rest.should == ""
       
-      # data.class.should             == RRDNotifier::Packet
+      data.class.should             == MonitoringProtocols::Collectd::NetworkMessage
       data.host.should              == 'hostname'
       data.time.should              == @now
       data.plugin.should            == 'plugin'
@@ -106,10 +106,10 @@ describe 'Collectd Ruby parser' do
       @pkt = pkt.build_packet
     end
     
-    should 'parse it' do
-      data, rest = @parser.parse_packet(@pkt)
+    should 'parse buffer' do
+      data, rest = @parser_class.parse_packet(@pkt)
       
-      # data.class.should            == RRDNotifier::Packet
+      data.class.should            == MonitoringProtocols::Collectd::NetworkMessage
       data.host.should             == 'hostname'
       data.time.should             == @now
       data.interval.should         == @interval
@@ -157,12 +157,12 @@ describe 'Collectd Ruby parser' do
        @pkt << builder.values([builder::GAUGE], [3.1415927])
      end
      
-     should 'parse it' do
-       data = @parser.parse(@pkt)
+     should 'parse buffer' do
+       data = @parser_class.parse(@pkt)
        
        data.size.should == 3
        
-       # data[0].class.should == RRDNotifier::Packet
+       data[0].class.should == MonitoringProtocols::Collectd::NetworkMessage
        
        data[0].host.should              == 'hostname'
        data[0].time.should              == @now
@@ -196,6 +196,17 @@ describe 'Collectd Ruby parser' do
        data[2].values[0].should         == 3.1415927
        
      end
+     
+     # should 'parse using feed interface' do
+     #  parser = @parser.new
+      
+     #  ret = parser.feed(@pkt[0,20])
+     #  ret.size.should == []
+      
+     #  ret = parser.feed(@pkt[21..-1])
+     #  ret.size.should == 2
+     # end
+     
    end
   
 end
