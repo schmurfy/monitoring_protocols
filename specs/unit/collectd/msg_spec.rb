@@ -41,7 +41,8 @@ describe 'Collectd Network Message' do
       d = @point.convert_content()
       d.class.should == MonitoringProtocols::DataPoint
       
-      d.host.should == @point.host      
+      d.first.should != true
+      d.host.should == @point.host
       d.time.gmt_offset.should == 0
       d.time.iso8601().should == @time_obj.getutc().iso8601()
       

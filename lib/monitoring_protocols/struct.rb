@@ -58,7 +58,8 @@ module MonitoringProtocols
   
   class DataPoint < CommonData
     properties(
-        :value
+        :value,
+        :first
       )
     
     def data?; true; end
