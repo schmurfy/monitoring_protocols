@@ -6,30 +6,34 @@ module MonitoringProtocols
       # part type
       HOST            = 0x0000
       TIME            = 0x0001
+      TIME_HR         = 0X0008
       PLUGIN          = 0x0002
       PLUGIN_INSTANCE = 0x0003
       TYPE            = 0x0004
       TYPE_INSTANCE   = 0x0005
       VALUES          = 0x0006
       INTERVAL        = 0x0007
+      INTERVAL_HR     = 0X0009
       MESSAGE         = 0x0100
       SEVERITY        = 0x0101
       
       PART_TYPE_AS_STRING = {
           HOST            => 'host',
           TIME            => 'time',
+          TIME_HR         => 'time_hr',
           PLUGIN          => 'plugin',
           PLUGIN_INSTANCE => 'plugin_instance',
           TYPE            => 'type',
           TYPE_INSTANCE   => 'type_instance',
           VALUES          => 'values',
           INTERVAL        => 'interval',
+          INTERVAL_HR     => 'interval_hr',
           MESSAGE         => 'message',
           SEVERITY        => 'severity'
         }.freeze
       
       STR_FIELDS = [HOST, PLUGIN, PLUGIN_INSTANCE, TYPE, TYPE_INSTANCE, MESSAGE]
-      INT_FIELDS = [TIME, INTERVAL, SEVERITY]
+      INT_FIELDS = [TIME, TIME_HR, INTERVAL, INTERVAL_HR, SEVERITY]
       
       COUNTER   = 0x00
       GAUGE     = 0x01
@@ -62,11 +66,26 @@ module MonitoringProtocols
       def self.parse_part(buffer)
         type, length, buffer = parse_part_header(buffer)
         case
-        when INT_FIELDS.include?(type)  then  val, buffer = parse_int64(buffer)        
+        when INT_FIELDS.include?(type)  then  val, buffer = parse_int64(buffer)
         when STR_FIELDS.include?(type)  then  val, buffer = buffer.unpack("Z#{length}a*")
         when type == VALUES             then  val, buffer = parse_part_values(length, buffer)
+        else
+          val, buffer = buffer.unpack("a#{length}a*")
+          raise ParseError, "unknown part: #{type}, data: #{val.inspect}"
         end
-              
+        
+        # just convert to seconds
+        if (type == TIME_HR)
+          type = TIME
+          val = (val >> 30)
+        end
+        
+        if (type == INTERVAL_HR)
+          type = INTERVAL
+          val = (val >> 30)
+          p [:interval, val]
+        end
+        
         [
           PART_TYPE_AS_STRING[type],
           val,
