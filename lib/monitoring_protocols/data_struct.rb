@@ -8,13 +8,13 @@ module MonitoringProtocols
     
     ##
     # Merge new data in the structure.
-    # 
+    #
     # @param [Object,Hash] opts_or_obj Source
     # @param [Array] only_fields an array of symbol
     #   specifying which fields to copy
     # @param [Boolean] allow_nil If false nil values from
     #   the source will not be copied in object
-    # 
+    #
     def merge_data_from!(opts_or_obj = {}, only_fields = nil, allow_nil = false)
       keys_left = list_keys(opts_or_obj)
       
@@ -57,7 +57,7 @@ module MonitoringProtocols
     end
 
 
-    class <<self  
+    class <<self
       def properties(*names)
         names.each do |name|
           attr_accessor(name)
@@ -76,5 +76,5 @@ module MonitoringProtocols
       end
     end
 
-  end  
+  end
 end

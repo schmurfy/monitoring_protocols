@@ -9,9 +9,9 @@ module MonitoringProtocols
     ##
     # Return a generic structure representing
     # the content of this message.
-    # 
+    #
     # @return [DataPoint,Notification]
-    # 
+    #
     def convert_content
       raise 'reimplement in subclass'
     end
@@ -35,7 +35,7 @@ module MonitoringProtocols
     end
     
     def time=(val)
-      case val  
+      case val
       when Time     then @time = val
       when Numeric  then @time = Time.at(val).getutc()
       else

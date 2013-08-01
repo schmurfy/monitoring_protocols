@@ -1,4 +1,7 @@
 module MonitoringProtocols
+  
+  ParseError = Class.new(RuntimeError)
+  
   class Parser
     
     def parse(data)
