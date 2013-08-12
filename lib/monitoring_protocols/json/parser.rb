@@ -7,25 +7,45 @@ module MonitoringProtocols
     #   type: 'datapoints',
     #   host: 'linux1'
     #   app_name: 'system',
-      
-    #   cpu: {  
+    #
+    #   cpu: {
     #     'user'  => 43,
     #     'sys'   => 3.4,
     #     'nice'  => 6.0
     #   },
-      
+    #
     #   memory: {
     #     'total'  => 2048,
     #     'used'   => 400
     #   }
     # }
+    
+    # {
+    #   type: 'datapoints',
+    #   app_name: 'system',
+    #
+    #   linux1: =>
+    #     cpu: {
+    #       'user'  => 43,
+    #       'sys'   => 3.4,
+    #       'nice'  => 6.0
+    #     },
+    #
+    #     memory: {
+    #       'total'  => 2048,
+    #       'used'   => 400
+    #     }
+    #   }
+    # }
+    #
     class Parser < Parser
       def self.parse(buffer)
         packets = []
         
-        data = Oj.load(buffer)
+        data = Oj.load(buffer, symbol_keys: false)
         
-        msg_type = data.delete(:type)
+        msg_type = data.delete('type')
+        
         if msg_type == 'datapoints'
           parse_datapoints(data) do |pkt|
             packets << pkt
@@ -36,30 +56,50 @@ module MonitoringProtocols
       end
       
     private
-      def self.parse_datapoints(data)
-        host = data.delete(:host)
-        app_name = data.delete(:app_name)
-        if time = data.delete(:time)
-          time = Time.parse(time)
-        end
+      def self.recursive_parse(point_data, next_fields, field_index, json_document, &block)
+        root_field = next_fields[field_index]
         
-        data.each do |res_name, metrics|
-          metrics.each do |metric_name, value|
-            msg = DataPoint.new(
-                host: host,
-                time: time,
-                app_name: app_name,
-                res_name: res_name.to_s,
-                metric_name: metric_name.to_s,
-                value: value
-              )
+        json_document.each do |name, value|
+          if root_field == :metric_name
+            point_data[root_field.to_sym] = name
+            point_data[:value] = value
             
-            yield(msg)
+            msg = DataPoint.new(point_data)
+            block.call(msg)
+          else
+            point_data[root_field] = name
+            recursive_parse(point_data, next_fields, field_index + 1, value, &block)
           end
         end
+      end
+      
+      def self.parse_datapoints(data, &block)
+        common_data = {}
+        
+        common_data[:host]     = data.delete('host')
+        common_data[:app_name] = data.delete('app_name')
+        common_data[:res_name] = data.delete('app_name')
+        
+        if time = data.delete('time')
+          common_data[:time] = Time.parse(time)
+        else
+          common_data[:time] = Time.now.utc()
+        end
+        
+        # find which field we expect as the toplevel of the
+        # json document
+        next_fields = [:host, :app_name, :res_name, :metric_name]
+        field_index = 0
+        while (field_index < next_fields.size) && (common_data[next_fields[field_index]] != nil)
+          field_index+= 1
+        end
+        
+        recursive_parse(common_data, next_fields, field_index, data, &block)
       end
       
     end
     
   end
+  
+  register_parser(:json, JSON::Parser)
 end
