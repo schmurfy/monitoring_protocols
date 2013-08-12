@@ -59,7 +59,7 @@ describe 'Collectd Network Message' do
   end
   
   
-  describe 'notification' do    
+  describe 'notification' do
     before do
       @point = FactoryGirl.build(:collectd_notification,
           type: 'memory',
@@ -71,7 +71,7 @@ describe 'Collectd Network Message' do
     end
 
 
-    should 'convert notification to Notification' do      
+    should 'convert notification to Notification' do
       d = @point.convert_content()
       d.class.should == Array
       d.size.should == 1
