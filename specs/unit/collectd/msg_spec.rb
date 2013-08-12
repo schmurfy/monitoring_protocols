@@ -39,6 +39,10 @@ describe 'Collectd Network Message' do
     
     should 'convert datapoint to DataPoint' do
       d = @point.convert_content()
+      d.class.should == Array
+      d.size.should == 1
+      
+      d = d.first
       d.class.should == MonitoringProtocols::DataPoint
       
       d.first.should != true
@@ -69,6 +73,9 @@ describe 'Collectd Network Message' do
 
     should 'convert notification to Notification' do      
       d = @point.convert_content()
+      d.class.should == Array
+      d.size.should == 1
+      d = d.first
       d.class.should == MonitoringProtocols::Notification
       
       d.host.should == @point.host

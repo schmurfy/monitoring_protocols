@@ -87,15 +87,17 @@ module MonitoringProtocols
           }
           
           if data?
-            DataPoint.new(common.merge!(
+            ret = DataPoint.new(common.merge!(
                 value: value
               ))
           else
-            Notification.new(common.merge!(
+            ret = Notification.new(common.merge!(
                 severity: severity,
                 message: message
               ))
           end
+          
+          [ret]
         end
         
       end

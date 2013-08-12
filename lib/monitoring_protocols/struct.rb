@@ -53,6 +53,10 @@ module MonitoringProtocols
           time: time ? time.iso8601 : nil
         )
     end
+    
+    def convert_content
+      [self]
+    end
 
   end
   
