@@ -79,6 +79,7 @@ module MonitoringProtocols
         common_data[:host]     = data.delete('host')
         common_data[:app_name] = data.delete('app_name')
         common_data[:res_name] = data.delete('app_name')
+        common_data[:first] = data.delete('first')
         
         if time = data.delete('time')
           common_data[:time] = Time.parse(time)

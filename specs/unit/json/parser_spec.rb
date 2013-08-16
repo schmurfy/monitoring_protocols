@@ -3,13 +3,45 @@ require File.expand_path('../../../spec_helper', __FILE__)
 describe 'JSON Ruby parser' do
   before do
     @parser_class = MonitoringProtocols::JSON::Parser
+    @now = Time.new.utc
+  end
+  
+  describe 'first packet' do
+    before do
+      @json = Oj.dump({
+            'type' => 'datapoints',
+            'host' => 'hostname',
+            'app_name' => 'system',
+            'time' => @now.iso8601,
+            'first' => true,
+            
+            'cpu' => {
+                'user' => 1,
+            }
+          },
+          indent: -1
+        )
+    end
+    
+    should 'parse buffer' do
+      msgs = @parser_class.parse(@json)
+      msgs.size.should == 1
+      
+      msgs[0].class.should            == MonitoringProtocols::DataPoint
+      msgs[0].first                   == true
+      msgs[0].host.should             == 'hostname'
+      msgs[0].time.to_i.should        == @now.to_i
+      msgs[0].app_name.should         == 'system'
+      msgs[0].res_name.should         == 'cpu'
+      msgs[0].metric_name.should      == 'user'
+      msgs[0].value.should            == 1
+    end
   end
   
   describe 'with common app_name' do
     
     describe 'One point in buffer' do
       before do
-        @now = Time.new.utc
         @json = Oj.dump({
               'type' => 'datapoints',
               'host' => 'hostname',
@@ -41,7 +73,6 @@ describe 'JSON Ruby parser' do
     
     describe 'Multiple points in buffer' do
       before do
-        @now = Time.new.utc
         @json = Oj.dump({
               'type' => 'datapoints',
               'host' => 'hostname',
@@ -122,7 +153,6 @@ describe 'JSON Ruby parser' do
     
     describe 'One point in buffer' do
       before do
-        @now = Time.new.utc
         @json = Oj.dump({
               'type' => 'datapoints',
               'host' => 'hostname',
@@ -168,6 +198,17 @@ describe 'JSON Ruby parser' do
                 }
               },
               
+              'icmp-ping' => {
+                "1.2.3.4" => {
+                  "latency" => 0.0,
+                  "loss" => 100.0
+                },
+                "192.168.0.32" => {
+                  "latency" => 3.45,
+                  "loss" => 4.0
+                }
+              },
+              
               'system' => {
                 'cpu' => {
                     'user' => 1,
@@ -188,7 +229,7 @@ describe 'JSON Ruby parser' do
       
       should 'parse buffer' do
         msgs = @parser_class.parse(@json)
-        msgs.size.should == 7
+        msgs.size.should == 11
         
         common_check = ->(m, app_name = 'system'){
           m.class.should            == MonitoringProtocols::DataPoint
@@ -211,6 +252,34 @@ describe 'JSON Ruby parser' do
           m.res_name.should         == 'cpu'
           m.metric_name.should      == 'sys'
           m.value.should            == 27
+        end
+        
+        msgs[index += 1].tap do |m|
+          common_check.call(m, 'icmp-ping')
+          m.res_name.should         == '1.2.3.4'
+          m.metric_name.should      == 'latency'
+          m.value.should            == 0.0
+        end
+        
+        msgs[index += 1].tap do |m|
+          common_check.call(m, 'icmp-ping')
+          m.res_name.should         == '1.2.3.4'
+          m.metric_name.should      == 'loss'
+          m.value.should            == 100.0
+        end
+        
+        msgs[index += 1].tap do |m|
+          common_check.call(m, 'icmp-ping')
+          m.res_name.should         == '192.168.0.32'
+          m.metric_name.should      == 'latency'
+          m.value.should            == 3.45
+        end
+        
+        msgs[index += 1].tap do |m|
+          common_check.call(m, 'icmp-ping')
+          m.res_name.should         == '192.168.0.32'
+          m.metric_name.should      == 'loss'
+          m.value.should            == 4.0
         end
 
         
