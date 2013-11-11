@@ -39,10 +39,15 @@ module MonitoringProtocols
     # }
     #
     class Parser < Parser
+      
+      def self._parse(buffer)
+        Oj.load(buffer, symbol_keys: false)
+      end
+      
       def self.parse(buffer)
         packets = []
         
-        data = Oj.load(buffer, symbol_keys: false)
+        data = _parse(buffer)
         
         msg_type = data.delete('type')
         

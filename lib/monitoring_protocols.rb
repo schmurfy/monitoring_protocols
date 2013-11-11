@@ -10,6 +10,8 @@ require File.expand_path('../monitoring_protocols/collectd/parser', __FILE__)
 
 require File.expand_path('../monitoring_protocols/json/parser', __FILE__)
 
+require File.expand_path('../monitoring_protocols/msgpack/parser', __FILE__)
+
 
 module MonitoringProtocols
   def self.factory_file
