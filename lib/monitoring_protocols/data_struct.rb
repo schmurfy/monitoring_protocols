@@ -1,4 +1,12 @@
 
+require 'bigdecimal'
+
+class BigDecimal
+  def to_msgpack(pack)
+    pack.write(to_f)
+  end
+end
+
 module MonitoringProtocols
   class DataStruct
     
