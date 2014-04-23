@@ -7,6 +7,7 @@ $LOAD_PATH.unshift( File.expand_path('../../lib' , __FILE__) )
 require 'monitoring_protocols'
 
 require 'eetee/ext/mocha'
+require 'eetee/ext/time'
 # require 'eetee/ext/em'
 
 require File.expand_path('../factories', __FILE__)

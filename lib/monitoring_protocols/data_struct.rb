@@ -1,7 +1,9 @@
 
 module MonitoringProtocols
   class DataStruct
-
+    
+    include Comparable
+    
     def initialize(*args)
       merge_data_from!(*args)
     end
@@ -52,8 +54,16 @@ module MonitoringProtocols
       h
     end
     
+    def to_a
+      self.class.attributes.map{|attr_name| send(attr_name) }
+    end
+    
     def to_msgpack(pack)
       pack.write(to_h)
+    end
+    
+    def <=>(other)
+      self.to_a <=> other.to_a
     end
 
 
