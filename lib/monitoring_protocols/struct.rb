@@ -26,14 +26,6 @@ module MonitoringProtocols
         :metric_name,
       )
     
-    def initialize(*args)
-      super
-      
-      unless @time
-        raise "time is required: #{to_h}"
-      end
-    end
-    
     def time=(val)
       case val
       when Time     then @time = val
