@@ -7,7 +7,7 @@ describe 'JSON Ruby builder' do
     @now = Time.new.utc
   end
   
-  should 'generate json for points' do
+  should 'generate compressed json for points' do
     expected_hash = {
       'type'      => 'datapoints',
       'host'      => 'linux1',
