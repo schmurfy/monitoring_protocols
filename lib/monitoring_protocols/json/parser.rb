@@ -58,6 +58,10 @@ module MonitoringProtocols
         end
         
         packets
+        
+      rescue Oj::ParseError
+        puts "Unable to parse: #{buffer}"
+        []
       end
       
     private
