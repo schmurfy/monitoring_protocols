@@ -38,6 +38,32 @@ describe 'JSON Ruby parser' do
     end
   end
   
+  describe 'invalid value' do
+    before do
+      @json = Oj.dump({
+            'type' => 'datapoints',
+            'host' => 'hostname',
+            'app_name' => 'system',
+            'time' => @now.iso8601,
+            'first' => true,
+            
+            'cpu' => {
+                'user' => "",
+            }
+          },
+          indent: -1
+        )
+    end
+    
+    should 'reject packet' do
+      err = ->{
+        @parser_class.parse(@json)
+      }.should.raise(MonitoringProtocols::ParseError)
+      
+      err.message.should.include?('invalid')
+    end
+  end
+  
   describe 'with common app_name' do
     
     describe 'One point in buffer' do

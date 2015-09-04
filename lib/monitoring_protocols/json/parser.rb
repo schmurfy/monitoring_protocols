@@ -59,7 +59,7 @@ module MonitoringProtocols
         
         packets
         
-      rescue Oj::ParseError
+      rescue Oj::ParseError, MonitoringProtocols::ParseError
         puts "Unable to parse: #{buffer}"
         []
       end
@@ -71,7 +71,7 @@ module MonitoringProtocols
         json_document.each do |name, value|
           if root_field == :metric_name
             point_data[root_field.to_sym] = name
-            point_data[:value] = value
+            point_data[:value] = parse_and_validate_value(value)
             
             msg = DataPoint.new(point_data)
             block.call(msg)
