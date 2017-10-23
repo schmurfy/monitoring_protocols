@@ -15,5 +15,5 @@ Gem::Specification.new do |gem|
   gem.version       = MonitoringProtocols::VERSION
   
   gem.add_dependency 'msgpack'
-  gem.add_dependency 'oj',      '~> 2.1'
+  gem.add_dependency 'oj'
 end
